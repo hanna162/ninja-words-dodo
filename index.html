@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ninja Word Dojo - Synonyms & Antonyms</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 1. UNIVERSAL FONTS */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+        /* 2. DOJO ANIMATIONS */
+        @keyframes float-shuriken {
+            0% { transform: rotate(0deg) translate(0,0); }
+            50% { transform: rotate(180deg) translate(10px, -10px); }
+            100% { transform: rotate(360deg) translate(0,0); }
+        }
+        .shuriken-bg {
+            position: absolute;
+            opacity: 0.1;
+            animation: float-shuriken 10s linear infinite;
+        }
+
+        /* 3. SOLID COLORS (Iframe Safe) */
+        .dojo-panel {
+            background-color: #1a0b0b; /* Dark Wood Color */
+            border: 4px solid #b91c1c; /* Red Border */
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            border-radius: 12px;
+            position: relative;
+        }
+        /* Bamboo texture header */
+        .dojo-header {
+            background-color: #7f1d1d;
+            border-bottom: 4px solid #450a0a;
+            padding: 10px;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .scroll-btn {
+            background-color: #fef3c7; /* Parchment color */
+            color: #451a03;
+            border: 2px solid #92400e;
+            border-left: 8px solid #92400e;
+            border-right: 8px solid #92400e;
+            font-weight: bold;
+            transition: all 0.1s;
+            position: relative;
+        }
+        .scroll-btn:hover {
+            transform: scale(1.02);
+            background-color: #fffbeb;
+        }
+        .scroll-btn:active {
+            transform: scale(0.95);
+            background-color: #fbbf24;
+        }
+
+        /* 4. PRINT STYLES */
+        @media print {
+            body * { visibility: hidden; }
+        }
+    </style>
+</head>
+<body class="bg-stone-900 text-white min-h-screen flex items-center justify-center overflow-y-auto relative">
+
+    <!-- DOJO BACKGROUND -->
+    <div class="fixed inset-0 bg-stone-900 z-0 opacity-90"></div>
+    <div class="fixed inset-0 z-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-20"></div>
+    
+    <!-- MAIN APP CONTAINER -->
+    <div id="app" class="relative z-10 w-full max-w-3xl p-4 my-8">
+
+        <!-- SCREEN 1: START MENU -->
+        <div id="start-screen" class="dojo-panel p-8 text-center">
+            <div class="text-6xl mb-4">🥷</div>
+            <h1 class="text-5xl font-bold text-red-500 mb-2 uppercase tracking-widest" style="text-shadow: 2px 2px 0px #000">Ninja Word Dojo</h1>
+            <p class="text-orange-200 mb-8 italic">Master the Art of Synonyms & Antonyms</p>
+            
+            <div class="space-y-4 max-w-md mx-auto">
+                <input type="text" id="student-name" placeholder="Enter Ninja Name..." 
+                    class="w-full p-4 rounded bg-stone-800 border-2 border-red-700 text-white placeholder-stone-500 focus:outline-none focus:border-yellow-500 text-center text-xl font-bold">
+                
+                <button onclick="goToSectorMenu()" id="start-btn" disabled 
+                    class="w-full p-4 rounded bg-red-700 hover:bg-red-600 text-white font-bold text-xl opacity-50 cursor-not-allowed transition shadow-lg border-b-4 border-red-900 active:border-b-0 active:translate-y-1">
+                    Enter Dojo 🥋
+                </button>
+                
+                <button onclick="printWorksheet()" 
+                    class="w-full p-3 rounded bg-stone-200 text-stone-900 font-bold text-lg hover:bg-white border-b-4 border-stone-400 active:border-b-0 active:translate-y-1">
+                    Print Scroll 📜
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: MISSION SELECT -->
+        <div id="sector-screen" class="hidden dojo-panel p-8 text-center">
+            <h2 class="text-3xl font-bold text-yellow-500 mb-6 uppercase">Select Training</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="startLevel(1)" class="p-6 rounded bg-stone-800 border-2 border-green-600 hover:bg-stone-700 text-left transition hover:scale-105 group">
+                    <div class="text-2xl mb-1 group-hover:animate-bounce">🎋 Training 1</div>
+                    <div class="text-green-400 font-bold">Synonyms (Sama Erti)</div>
+                    <div class="text-xs text-stone-400 mt-1">Beginner Level</div>
+                </button>
+                <button onclick="startLevel(2)" class="p-6 rounded bg-stone-800 border-2 border-blue-600 hover:bg-stone-700 text-left transition hover:scale-105 group">
+                    <div class="text-2xl mb-1 group-hover:animate-bounce">🌊 Training 2</div>
+                    <div class="text-blue-400 font-bold">Antonyms (Lawan Erti)</div>
+                    <div class="text-xs text-stone-400 mt-1">Beginner Level</div>
+                </button>
+                <button onclick="startLevel(3)" class="p-6 rounded bg-stone-800 border-2 border-yellow-600 hover:bg-stone-700 text-left transition hover:scale-105 group">
+                    <div class="text-2xl mb-1 group-hover:animate-bounce">⚔️ Training 3</div>
+                    <div class="text-yellow-400 font-bold">Tricky Synonyms</div>
+                    <div class="text-xs text-stone-400 mt-1">Master Level</div>
+                </button>
+                <button onclick="startLevel(4)" class="p-6 rounded bg-stone-800 border-2 border-red-600 hover:bg-stone-700 text-left transition hover:scale-105 group">
+                    <div class="text-2xl mb-1 group-hover:animate-bounce">👺 Training 4</div>
+                    <div class="text-red-400 font-bold">Tricky Antonyms</div>
+                    <div class="text-xs text-stone-400 mt-1">Master Level</div>
+                </button>
+            </div>
+            <button onclick="goBackToStart()" class="mt-8 text-stone-400 hover:text-white underline">Leave Dojo</button>
+        </div>
+
+        <!-- SCREEN 3: QUIZ INTERFACE -->
+        <div id="quiz-screen" class="hidden flex flex-col gap-4">
+            <!-- Header -->
+            <div class="flex justify-between items-center dojo-panel p-3 bg-stone-800 !border-2 !border-stone-600">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🥷</span>
+                    <span id="player-display" class="font-bold text-yellow-500">Ninja</span>
+                </div>
+                <button onclick="confirmExit()" class="bg-red-900 hover:bg-red-800 px-3 py-1 rounded text-sm font-bold border border-red-500">
+                    Exit ❌
+                </button>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="dojo-panel p-4 flex justify-between items-center bg-stone-900">
+                <div>
+                    <p class="text-xs text-stone-400 uppercase">Challenge</p>
+                    <p class="text-xl font-bold"><span id="q-current">1</span> / 15</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-stone-400 uppercase">Honor</p>
+                    <p class="text-2xl font-bold text-yellow-500" id="score-display">0</p>
+                </div>
+            </div>
+
+            <!-- Timer Bar -->
+            <div class="w-full bg-stone-900 rounded h-3 border border-stone-700 overflow-hidden">
+                <div id="timer-bar" class="h-full bg-red-600 transition-all duration-1000 ease-linear" style="width: 100%"></div>
+            </div>
+
+            <!-- Question Area -->
+            <div class="dojo-panel p-8 min-h-[160px] flex flex-col items-center justify-center relative bg-stone-800">
+                <div id="q-label" class="text-yellow-500 font-bold uppercase tracking-widest text-sm mb-2">Find the Synonym</div>
+                <h2 id="question-text" class="text-3xl md:text-4xl font-bold text-center text-white">
+                    Loading...
+                </h2>
+                
+                <!-- Feedback Modal -->
+                <div id="explanation-box" class="hidden absolute inset-0 bg-stone-900/95 z-20 flex flex-col items-center justify-center p-4 text-center rounded-lg border-4 border-yellow-600">
+                    <p class="text-yellow-500 font-bold text-xl mb-2">Sensei Says: 🧘</p>
+                    <p id="explanation-text" class="text-white text-lg mb-6">Explanation.</p>
+                    <button onclick="nextQuestion()" class="bg-green-700 hover:bg-green-600 text-white px-8 py-3 rounded font-bold border-b-4 border-green-900 active:border-b-0 active:translate-y-1">
+                        Next Challenge ➡️
+                    </button>
+                </div>
+            </div>
+
+            <!-- Answer Scrolls -->
+            <div id="options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Scrolls injected here -->
+            </div>
+        </div>
+
+        <!-- SCREEN 4: GAME OVER -->
+        <div id="end-screen" class="hidden dojo-panel p-8 text-center">
+            <h1 class="text-4xl font-bold text-yellow-500 mb-2">Training Complete! 🥋</h1>
+            <p class="text-stone-300 mb-6">You have sharpened your mind.</p>
+            
+            <div class="bg-stone-800 p-6 rounded border-2 border-red-900 mb-6">
+                <p class="text-sm text-stone-400">TOTAL HONOR</p>
+                <p class="text-6xl font-bold text-white mb-2" id="final-score">0</p>
+                <div class="text-red-500 text-2xl font-bold uppercase" id="badge-display">White Belt</div>
+                <p class="text-stone-500 mt-2">Ninja: <span id="cert-name">Name</span></p>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="goToSectorMenu()" class="w-full p-3 rounded bg-red-700 hover:bg-red-600 text-white font-bold text-lg border-b-4 border-red-900">
+                    New Training ⚔️
+                </button>
+                <button onclick="printWorksheet()" class="w-full p-3 rounded bg-stone-200 text-stone-900 font-bold text-lg hover:bg-white border-b-4 border-stone-400">
+                    Print Scroll 📜
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- 1. DATASET (60 Questions: Synonyms & Antonyms) ---
+        const quizData = [
+            // ZONE 1: Synonyms (Easy)
+            {id: 1, sector: 1, q: "Big", a: ["Small", "Huge", "Tiny", "Short"], c: "Huge", e: "'Big' means large in size. 'Huge' is the synonym."},
+            {id: 2, sector: 1, q: "Happy", a: ["Sad", "Glad", "Angry", "Mad"], c: "Glad", e: "'Happy' means feeling joy. 'Glad' means the same."},
+            {id: 3, sector: 1, q: "Fast", a: ["Slow", "Quick", "Lazy", "Late"], c: "Quick", e: "'Fast' means moving with speed. 'Quick' is the synonym."},
+            {id: 4, sector: 1, q: "Start", a: ["End", "Begin", "Stop", "Finish"], c: "Begin", e: "'Start' means to commence. 'Begin' means the same."},
+            {id: 5, sector: 1, q: "Small", a: ["Big", "Tiny", "Huge", "Tall"], c: "Tiny", e: "'Small' means little. 'Tiny' is the synonym."},
+            {id: 6, sector: 1, q: "Look", a: ["Hear", "See", "Smell", "Taste"], c: "See", e: "'Look' means to use your eyes. 'See' is the synonym."},
+            {id: 7, sector: 1, q: "Listen", a: ["Talk", "Hear", "Run", "Walk"], c: "Hear", e: "'Listen' involves ears. 'Hear' is the synonym."},
+            {id: 8, sector: 1, q: "Speak", a: ["Sleep", "Talk", "Eat", "Jump"], c: "Talk", e: "'Speak' means to say words. 'Talk' is the synonym."},
+            {id: 9, sector: 1, q: "End", a: ["Start", "Finish", "Go", "Play"], c: "Finish", e: "'End' means to stop. 'Finish' is the synonym."},
+            {id: 10, sector: 1, q: "Correct", a: ["Wrong", "Right", "Bad", "Left"], c: "Right", e: "'Correct' means true/accurate. 'Right' is the synonym."},
+            {id: 11, sector: 1, q: "Angry", a: ["Happy", "Mad", "Calm", "Nice"], c: "Mad", e: "'Angry' means upset. 'Mad' is the synonym."},
+            {id: 12, sector: 1, q: "Afraid", a: ["Brave", "Scared", "Happy", "Strong"], c: "Scared", e: "'Afraid' means feeling fear. 'Scared' is the synonym."},
+            {id: 13, sector: 1, q: "Beautiful", a: ["Ugly", "Pretty", "Bad", "Old"], c: "Pretty", e: "'Beautiful' means nice to look at. 'Pretty' is the synonym."},
+            {id: 14, sector: 1, q: "House", a: ["Car", "Home", "School", "Park"], c: "Home", e: "'House' is a place to live. 'Home' is the synonym."},
+            {id: 15, sector: 1, q: "Gift", a: ["Box", "Present", "Toy", "Card"], c: "Present", e: "'Gift' is something you give. 'Present' is the synonym."},
+
+            // ZONE 2: Antonyms (Easy)
+            {id: 16, sector: 2, q: "Hot", a: ["Warm", "Cold", "Sunny", "Dry"], c: "Cold", e: "The opposite of 'Hot' is 'Cold'."},
+            {id: 17, sector: 2, q: "Up", a: ["High", "Down", "Left", "Right"], c: "Down", e: "The opposite of 'Up' is 'Down'."},
+            {id: 18, sector: 2, q: "Good", a: ["Nice", "Bad", "Fine", "Okay"], c: "Bad", e: "The opposite of 'Good' is 'Bad'."},
+            {id: 19, sector: 2, q: "Rich", a: ["Poor", "Money", "Gold", "Happy"], c: "Poor", e: "The opposite of 'Rich' (having money) is 'Poor'."},
+            {id: 20, sector: 2, q: "Day", a: ["Sun", "Night", "Light", "Morning"], c: "Night", e: "The opposite of 'Day' is 'Night'."},
+            {id: 21, sector: 2, q: "In", a: ["Inside", "Out", "Under", "On"], c: "Out", e: "The opposite of 'In' is 'Out'."},
+            {id: 22, sector: 2, q: "Wet", a: ["Water", "Dry", "Soak", "Rain"], c: "Dry", e: "The opposite of 'Wet' is 'Dry'."},
+            {id: 23, sector: 2, q: "Clean", a: ["Nice", "Dirty", "Tidy", "New"], c: "Dirty", e: "The opposite of 'Clean' is 'Dirty'."},
+            {id: 24, sector: 2, q: "Open", a: ["Close", "Door", "Wide", "Big"], c: "Close", e: "The opposite of 'Open' is 'Close'."},
+            {id: 25, sector: 2, q: "Full", a: ["Eat", "Empty", "Filled", "Big"], c: "Empty", e: "The opposite of 'Full' is 'Empty'."},
+            {id: 26, sector: 2, q: "Happy", a: ["Glad", "Sad", "Joy", "Smile"], c: "Sad", e: "The opposite of 'Happy' is 'Sad'."},
+            {id: 27, sector: 2, q: "Hard", a: ["Rock", "Soft", "Stone", "Tough"], c: "Soft", e: "The opposite of 'Hard' is 'Soft'."},
+            {id: 28, sector: 2, q: "Boy", a: ["Man", "Girl", "Kid", "Baby"], c: "Girl", e: "The opposite gender of 'Boy' is 'Girl'."},
+            {id: 29, sector: 2, q: "Give", a: ["Present", "Take", "Share", "Send"], c: "Take", e: "The opposite of 'Give' is 'Take'."},
+            {id: 30, sector: 2, q: "Love", a: ["Like", "Hate", "Hug", "Kiss"], c: "Hate", e: "The opposite of 'Love' is 'Hate'."},
+
+            // ZONE 3: Synonyms (Hard)
+            {id: 31, sector: 3, q: "Difficult", a: ["Easy", "Hard", "Simple", "Fun"], c: "Hard", e: "'Difficult' means not easy. 'Hard' is the synonym."},
+            {id: 32, sector: 3, q: "Intelligent", a: ["Stupid", "Smart", "Silly", "Funny"], c: "Smart", e: "'Intelligent' means having knowledge. 'Smart' is the synonym."},
+            {id: 33, sector: 3, q: "Wealthy", a: ["Poor", "Rich", "Sad", "Weak"], c: "Rich", e: "'Wealthy' means having money. 'Rich' is the synonym."},
+            {id: 34, sector: 3, q: "Silent", a: ["Loud", "Quiet", "Noisy", "Talk"], c: "Quiet", e: "'Silent' means no sound. 'Quiet' is the synonym."},
+            {id: 35, sector: 3, q: "Select", a: ["Choose", "Leave", "Stop", "Go"], c: "Choose", e: "'Select' means to pick. 'Choose' is the synonym."},
+            {id: 36, sector: 3, q: "Ancient", a: ["New", "Old", "Young", "Fresh"], c: "Old", e: "'Ancient' means very old. 'Old' is the synonym."},
+            {id: 37, sector: 3, q: "Delicious", a: ["Yucky", "Tasty", "Bad", "Gross"], c: "Tasty", e: "'Delicious' means good taste. 'Tasty' is the synonym."},
+            {id: 38, sector: 3, q: "Purchase", a: ["Sell", "Buy", "Give", "Take"], c: "Buy", e: "'Purchase' means to pay for something. 'Buy' is the synonym."},
+            {id: 39, sector: 3, q: "Transform", a: ["Keep", "Change", "Stay", "Hold"], c: "Change", e: "'Transform' means to alter form. 'Change' is the synonym."},
+            {id: 40, sector: 3, q: "Vacant", a: ["Full", "Empty", "Busy", "Loud"], c: "Empty", e: "'Vacant' means not occupied. 'Empty' is the synonym."},
+            {id: 41, sector: 3, q: "Occur", a: ["Stop", "Happen", "End", "Wait"], c: "Happen", e: "'Occur' means to take place. 'Happen' is the synonym."},
+            {id: 42, sector: 3, q: "Brave", a: ["Scared", "Courageous", "Weak", "Shy"], c: "Courageous", e: "'Brave' means showing no fear. 'Courageous' is the synonym."},
+            {id: 43, sector: 3, q: "Assist", a: ["Hinder", "Help", "Stop", "Block"], c: "Help", e: "'Assist' means to aid. 'Help' is the synonym."},
+            {id: 44, sector: 3, q: "Exit", a: ["Enter", "Leave", "Come", "Stay"], c: "Leave", e: "'Exit' means to go out. 'Leave' is the synonym."},
+            {id: 45, sector: 3, q: "Annual", a: ["Daily", "Yearly", "Weekly", "Monthly"], c: "Yearly", e: "'Annual' means once a year. 'Yearly' is the synonym."},
+
+            // ZONE 4: Antonyms (Hard)
+            {id: 46, sector: 4, q: "Strong", a: ["Tough", "Weak", "Hard", "Big"], c: "Weak", e: "The opposite of 'Strong' is 'Weak'."},
+            {id: 47, sector: 4, q: "Heavy", a: ["Fat", "Light", "Big", "Thin"], c: "Light", e: "The opposite of 'Heavy' is 'Light'."},
+            {id: 48, sector: 4, q: "Wide", a: ["Fat", "Narrow", "Big", "Long"], c: "Narrow", e: "The opposite of 'Wide' is 'Narrow'."},
+            {id: 49, sector: 4, q: "Safe", a: ["Secure", "Dangerous", "Good", "Home"], c: "Dangerous", e: "The opposite of 'Safe' is 'Dangerous'."},
+            {id: 50, sector: 4, q: "Cheap", a: ["Low", "Expensive", "Sale", "Free"], c: "Expensive", e: "The opposite of 'Cheap' is 'Expensive'."},
+            {id: 51, sector: 4, q: "Early", a: ["First", "Late", "Fast", "Slow"], c: "Late", e: "The opposite of 'Early' is 'Late'."},
+            {id: 52, sector: 4, q: "Borrow", a: ["Take", "Lend", "Keep", "Hold"], c: "Lend", e: "The opposite of 'Borrow' (take) is 'Lend' (give)."},
+            {id: 53, sector: 4, q: "Victory", a: ["Win", "Defeat", "Gold", "Prize"], c: "Defeat", e: "The opposite of 'Victory' (win) is 'Defeat' (lose)."},
+            {id: 54, sector: 4, q: "Create", a: ["Make", "Destroy", "Build", "Draw"], c: "Destroy", e: "The opposite of 'Create' is 'Destroy'."},
+            {id: 55, sector: 4, q: "Friend", a: ["Pal", "Enemy", "Buddy", "Mate"], c: "Enemy", e: "The opposite of 'Friend' is 'Enemy'."},
+            {id: 56, sector: 4, q: "Private", a: ["Secret", "Public", "Hidden", "Alone"], c: "Public", e: "The opposite of 'Private' is 'Public'."},
+            {id: 57, sector: 4, q: "Remember", a: ["Think", "Forget", "Know", "Keep"], c: "Forget", e: "The opposite of 'Remember' is 'Forget'."},
+            {id: 58, sector: 4, q: "Polite", a: ["Nice", "Rude", "Good", "Kind"], c: "Rude", e: "The opposite of 'Polite' is 'Rude'."},
+            {id: 59, sector: 4, q: "True", a: ["Right", "False", "Yes", "Real"], c: "False", e: "The opposite of 'True' is 'False'."},
+            {id: 60, sector: 4, q: "Float", a: ["Fly", "Sink", "Swim", "Up"], c: "Sink", e: "The opposite of 'Float' is 'Sink'."}
+        ];
+
+        // --- 2. VARIABLES ---
+        let currentSectorQuestions = [];
+        let currentQIndex = 0;
+        let score = 0;
+        let timerInterval;
+        let playerName = "";
+
+        // --- 3. ELEMENTS ---
+        const startScreen = document.getElementById('start-screen');
+        const sectorScreen = document.getElementById('sector-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const endScreen = document.getElementById('end-screen');
+        const nameInput = document.getElementById('student-name');
+        const startBtn = document.getElementById('start-btn');
+
+        // Name Logic
+        nameInput.addEventListener('input', (e) => {
+            playerName = e.target.value.trim();
+            startBtn.disabled = playerName.length === 0;
+            if(playerName.length > 0) {
+                startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        });
+
+        // --- 4. NAVIGATION FUNCTIONS ---
+        function goToSectorMenu() {
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            sectorScreen.classList.remove('hidden');
+        }
+
+        function goBackToStart() {
+            sectorScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+        function startLevel(sectorId) {
+            // Setup Label
+            const labels = ["Synonyms", "Antonyms", "Tricky Synonyms", "Tricky Antonyms"];
+            document.getElementById('q-label').textContent = "Find the " + labels[sectorId-1];
+
+            // Filter & Shuffle
+            currentSectorQuestions = quizData
+                .filter(q => q.sector === sectorId)
+                .sort(() => Math.random() - 0.5);
+            
+            if(currentSectorQuestions.length === 0) return alert("Error: No questions found.");
+
+            currentQIndex = 0;
+            score = 0;
+            document.getElementById('player-display').textContent = playerName;
+
+            sectorScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if(currentQIndex >= currentSectorQuestions.length) {
+                endGame();
+                return;
+            }
+
+            const qData = currentSectorQuestions[currentQIndex];
+            document.getElementById('q-current').textContent = currentQIndex + 1;
+            document.getElementById('score-display').textContent = score;
+            document.getElementById('question-text').textContent = qData.q;
+            document.getElementById('explanation-box').classList.add('hidden');
+            
+            resetTimer();
+
+            // Render Scrolls
+            const grid = document.getElementById('options-grid');
+            grid.innerHTML = '';
+            const opts = [...qData.a].sort(() => Math.random() - 0.5);
+            
+            opts.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "scroll-btn w-full p-4 rounded text-xl shadow-md";
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(btn, opt, qData);
+                grid.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(btn, selected, qData) {
+            clearInterval(timerInterval);
+            document.querySelectorAll('.scroll-btn').forEach(b => b.disabled = true);
+
+            if(selected === qData.c) {
+                // Correct
+                btn.style.backgroundColor = '#86efac'; // Green-ish
+                btn.style.borderColor = '#15803d';
+                score += 10;
+                playTone('correct');
+                setTimeout(nextQuestion, 1000);
+            } else {
+                // Wrong
+                btn.style.backgroundColor = '#fca5a5'; // Red-ish
+                btn.style.borderColor = '#991b1b';
+                playTone('wrong');
+                showExplanation(qData.e, qData.c);
+            }
+            document.getElementById('score-display').textContent = score;
+        }
+
+        function showExplanation(text, correct) {
+            document.getElementById('explanation-text').innerHTML = `The correct answer is: <b class="text-yellow-400">${correct}</b><br><span class="text-sm text-stone-300">${text}</span>`;
+            document.getElementById('explanation-box').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQIndex++;
+            loadQuestion();
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            const bar = document.getElementById('timer-bar');
+            let width = 100;
+            bar.style.width = '100%';
+
+            timerInterval = setInterval(() => {
+                width -= (100 / 300); 
+                bar.style.width = width + '%';
+                if(width <= 0) {
+                    clearInterval(timerInterval);
+                    playTone('timeout');
+                    const qData = currentSectorQuestions[currentQIndex];
+                    showExplanation("Time is up! " + qData.e, qData.c);
+                    document.querySelectorAll('.scroll-btn').forEach(b => b.disabled = true);
+                }
+            }, 100);
+        }
+
+        function endGame() {
+            quizScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('cert-name').textContent = playerName || "Ninja";
+
+            let badge = "White Belt";
+            if(score > 50) badge = "Green Belt";
+            if(score > 100) badge = "Black Belt";
+            if(score > 140) badge = "Sensei Master";
+            document.getElementById('badge-display').textContent = badge;
+        }
+
+        function confirmExit() {
+            if(confirm("Leave Dojo? Progress will be lost.")) {
+                clearInterval(timerInterval);
+                goToSectorMenu();
+            }
+        }
+
+        // --- 5. AUDIO SYNTH ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTone(type) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'correct') {
+                osc.type = 'triangle'; // Sharp cut sound
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth'; // Harsh gong
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.5);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'timeout') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            }
+        }
+
+        // --- 6. PRINT FUNCTION ---
+        function printWorksheet() {
+            const printQ = [...quizData].sort(() => Math.random() - 0.5).slice(0, 20);
+            const printWindow = window.open('', '_blank');
+            let html = `
+                <html><head><title>Ninja Scroll Worksheet</title>
+                <style>body{font-family:"Courier New",monospace;padding:40px;background:#fff}h1{text-align:center;border-bottom:4px double #000;padding-bottom:10px}.q{margin-bottom:15px;border-left:2px solid #000;padding-left:10px}.key{margin-top:50px;page-break-before:always}</style>
+                </head><body>
+                <h1>Ninja Word Dojo Scroll</h1>
+                <p>Name: __________________ Date: ___________</p><hr>
+                <p><b>Instruction:</b> Choose the best Synonym (Same) or Antonym (Opposite).</p>
+            `;
+            
+            printQ.forEach((q, i) => {
+                const type = q.sector % 2 !== 0 ? "Synonym for:" : "Antonym for:";
+                html += `<div class="q"><b>${i+1}. ${type} ${q.q}</b><br> Options: [ ${q.a.join(' ]  [ ')} ]</div>`;
+            });
+            
+            html += `<div class="key"><h3>Sensei's Answer Key</h3>`;
+            printQ.forEach((q, i) => html += `<p>${i+1}. ${q.c} (${q.e})</p>`);
+            html += `</div></body></html>`;
+            
+            printWindow.document.write(html);
+            printWindow.document.close();
+            setTimeout(() => printWindow.print(), 500);
+        }
+    </script>
+</body>
+</html>
